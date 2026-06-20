@@ -129,7 +129,6 @@ free-temp-mail/
 ├── index.html
 ├── style.css
 ├── security-ui.css
-├── footer.css
 ├── script.js
 ├── privacy.html
 ├── terms.html
@@ -174,7 +173,6 @@ Upload all project files to the GitHub repository:
 - index.html
 - style.css
 - security-ui.css
-- footer.css
 - script.js
 - privacy.html
 - terms.html
