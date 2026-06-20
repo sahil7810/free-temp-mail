@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QuickTemp Mail - Free Temporary Email & Temp Mail Inbox</title>
-  <meta name="description" content="QuickTemp Mail is a free temporary email and temp mail inbox powered by Mail.tm API. Create a disposable email for spam protection, privacy-friendly testing, and safer sign-ups." />
+  <title>QuickTemp Mail - Free Temporary Email, Temp Mail & Disposable Inbox</title>
+  <meta name="description" content="QuickTemp Mail is a free temporary email and temp mail inbox powered by Mail.tm API. Create a disposable email for spam protection, newsletters, trials, and privacy-friendly testing." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://quicktemp-mail.pages.dev/" />
   <link rel="manifest" href="manifest.json" />
@@ -44,9 +44,11 @@
       </a>
 
       <div class="nav-links" aria-label="Page links">
+        <a href="index.html">Home</a>
         <a href="#mailbox">Inbox</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#faq">FAQ</a>
+        <a href="#guide">Guide</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
       </div>
 
       <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode">
@@ -62,10 +64,10 @@
         <div class="hero-content">
           <p class="eyebrow">Free temp mail for spam protection</p>
           <h1>Free Temporary Email</h1>
-          <p class="hero-description">Create a temporary email address to protect your real inbox from spam. QuickTemp Mail gives you a simple disposable email inbox for privacy-friendly testing and safer sign-ups.</p>
+          <p class="hero-description">Create a temporary email address to protect your real inbox from spam. QuickTemp Mail gives you a simple disposable email inbox for newsletters, trials, testing, and safer sign-ups.</p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="btn btn-primary" href="#mailbox">Generate Temp Mail</a>
-            <a class="btn btn-secondary" href="#how-it-works">How It Works</a>
+            <a class="btn btn-secondary" href="#guide">Learn More</a>
           </div>
         </div>
 
@@ -76,7 +78,7 @@
           </div>
           <p class="preview-label">Your disposable email inbox</p>
           <p class="preview-email">Generate one below</p>
-          <p class="muted-text">Use this free temporary email tool for newsletters, trials, and testing where a short-term inbox is enough.</p>
+          <p class="muted-text">Use this free temporary email tool when a short-term inbox is enough. Do not use it for important accounts.</p>
         </aside>
       </div>
     </section>
@@ -87,7 +89,7 @@
           <div class="section-heading">
             <p class="eyebrow">Temp mail generator</p>
             <h2 id="temp-mail-title">Your Temporary Email Box</h2>
-            <p>Generate a disposable email address, copy it, then refresh your inbox manually.</p>
+            <p>Generate a disposable email address, tap the box to copy it, then refresh your inbox manually or wait for auto-refresh.</p>
           </div>
 
           <div id="errorBanner" class="error-banner" role="alert" hidden></div>
@@ -95,26 +97,32 @@
           <div class="email-display" aria-live="polite">
             <label for="emailAddress">Current temporary email</label>
             <div class="email-row">
-              <input id="emailAddress" type="text" value="Click Generate Email" readonly aria-describedby="emailHelp importantNotice" />
+              <input id="emailAddress" type="text" value="Click Generate Email" readonly aria-describedby="emailHelp importantNotice" title="Tap to copy email" />
             </div>
-            <p id="emailHelp" class="help-text">This static app uses the public Mail.tm API directly from your browser. No API key is needed.</p>
+            <p id="emailHelp" class="help-text">Tap the email box to copy your address. This static app uses the public Mail.tm API directly from your browser.</p>
             <p id="importantNotice" class="notice-text">Do not use temporary email for important accounts.</p>
           </div>
 
           <div class="button-grid" aria-label="Temporary email controls">
-            <button id="generateBtn" class="btn btn-primary" type="button" onclick="generateEmail()">Generate Email</button>
+            <button id="generateBtn" class="btn btn-primary btn-generate" type="button" onclick="generateEmail()">Generate Email</button>
             <button id="copyBtn" class="btn btn-secondary" type="button" onclick="copyEmail()" disabled>Copy Email</button>
             <button id="refreshBtn" class="btn btn-secondary" type="button" onclick="refreshInbox()" disabled>Refresh Inbox</button>
             <button id="resetBtn" class="btn btn-danger" type="button" onclick="resetEmail()" disabled>Reset Email</button>
           </div>
 
-          <p id="statusMessage" class="status-message" role="status" aria-live="polite">No temporary email generated yet.</p>
+          <div class="status-row">
+            <span id="loadingSpinner" class="inline-spinner" aria-hidden="true" hidden></span>
+            <p id="statusMessage" class="status-message" role="status" aria-live="polite">No temporary email generated yet.</p>
+          </div>
         </section>
 
         <section class="panel inbox-panel" aria-labelledby="inbox-title">
-          <div class="section-heading compact-heading">
-            <p class="eyebrow">Inbox</p>
-            <h2 id="inbox-title">Inbox</h2>
+          <div class="section-heading compact-heading inbox-heading">
+            <div>
+              <p class="eyebrow">Inbox</p>
+              <h2 id="inbox-title">Inbox (<span id="inboxCount">0</span>)</h2>
+            </div>
+            <span class="auto-refresh-note">Auto-refresh: 15s</span>
           </div>
 
           <ul id="inboxList" class="inbox-list" aria-label="Inbox messages">
@@ -167,7 +175,44 @@
           <article class="step-card">
             <span class="step-number">3</span>
             <h3>Refresh</h3>
-            <p>Refresh manually to check your temp mail inbox. Refresh is limited to reduce repeated API calls.</p>
+            <p>Refresh manually or wait for the safe 15-second auto-refresh to check your temp mail inbox.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="guide" class="section-padding content-section">
+      <div class="container">
+        <div class="section-heading center-heading">
+          <p class="eyebrow">Helpful guide</p>
+          <h2>Temporary Email Guide</h2>
+          <p>Simple information for real users who want a cleaner inbox and safer testing habits.</p>
+        </div>
+
+        <div class="content-grid">
+          <article class="content-card">
+            <h2>What is Temporary Email?</h2>
+            <p>A temporary email is a short-term email address that you can use when you do not want to share your main inbox. It is useful when you want to read a confirmation message, test a form, join a newsletter, or try a simple online tool without filling your real inbox with extra mail. A temp mail inbox is usually quick to create and easy to reset. QuickTemp Mail uses the Mail.tm API to create a disposable email address in your browser. It is not meant for important accounts, recovery emails, banking, school, or government services. Use it for low-risk tasks where a short-term inbox is enough.</p>
+          </article>
+
+          <article class="content-card">
+            <h2>How Disposable Email Works</h2>
+            <p>A disposable email works by creating a new address on a supported temporary mail domain. After the address is created, messages sent to that address can be fetched from the inbox. QuickTemp Mail keeps this flow simple: generate an email, copy it, use it where appropriate, and refresh the inbox to check for messages. The website stores the current temporary email session in your browser localStorage so the inbox can continue after a page refresh. The message body is shown as safe plain text where possible. This helps avoid placing untrusted email HTML directly inside the page.</p>
+          </article>
+
+          <article class="content-card">
+            <h2>Benefits of Temporary Email</h2>
+            <p>Temporary email can help reduce unwanted messages in your real inbox. It is helpful for newsletters, trials, product tests, demo projects, and checking how email forms work. A free temporary email is also useful when you want to separate casual testing from personal communication. It can save time because you do not need to create a new permanent email address for every small task. Still, temporary inboxes should be used carefully. They are not a replacement for your main email and should not be used for accounts you need to keep for a long time.</p>
+          </article>
+
+          <article class="content-card">
+            <h2>Privacy and Spam Protection</h2>
+            <p>One common reason people use temp mail is spam protection. If you only need a short-term inbox, using a disposable email can reduce how often your personal address is shared. This can help keep your real inbox cleaner. QuickTemp Mail does not ask you to enter personal information to generate an inbox. However, no temporary email service should be treated as fully anonymous or perfect for every situation. For important messages, private documents, password recovery, financial accounts, school accounts, or government services, always use a trusted long-term email address that you control.</p>
+          </article>
+
+          <article class="content-card">
+            <h2>Temporary Email for Testing</h2>
+            <p>Temporary email is useful for students, developers, creators, and website owners who need to test simple email flows. You can test a contact form, newsletter signup, demo login, or project notification without filling your main inbox. QuickTemp Mail keeps the process beginner-friendly because it runs as a static site with HTML, CSS, and JavaScript. There is no npm setup, no server, no database, and no API key. Just generate a disposable email, send a test message, and refresh the inbox. Keep testing honest and safe, and avoid using temporary email for any harmful or misleading activity.</p>
           </article>
         </div>
       </div>
@@ -213,7 +258,10 @@
 
   <footer class="site-footer">
     <div class="container footer-content">
-      <p>&copy; <span id="year"></span> QuickTemp Mail. Built for privacy, spam protection, and testing.</p>
+      <div>
+        <a class="footer-logo" href="index.html">QuickTemp Mail</a>
+        <p>Built for privacy-friendly testing and spam protection.</p>
+      </div>
       <div class="footer-links" aria-label="Footer links">
         <a href="index.html">Home</a>
         <a href="privacy.html">Privacy Policy</a>
@@ -223,6 +271,7 @@
     </div>
   </footer>
 
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
   <script src="script.js"></script>
 </body>
 </html>
