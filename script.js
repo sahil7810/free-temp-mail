@@ -3,7 +3,8 @@
 // QuickTemp Mail
 // Static frontend for the Mail.tm API: no backend, no database, no npm, and no API key.
 
-const API_BASE = "https://api.mail.tm";
+const IS_LOCAL_DEV = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const API_BASE = IS_LOCAL_DEV ? "https://api.mail.tm" : "/api/mailtm";
 const API_TIMEOUT_MS = 15000;
 const REFRESH_COOLDOWN_MS = 10000;
 const AUTO_REFRESH_MS = 15000;
@@ -13,7 +14,7 @@ const MAX_INBOX_MESSAGES = 50;
 const MAX_MESSAGE_PREVIEW_CHARS = 320;
 const MAX_MESSAGE_BODY_CHARS = 12000;
 const SAFE_URL_PATTERN = /(https?:\/\/[^\s<>"']+)/gi;
-const DEBUG_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const DEBUG_MODE = IS_LOCAL_DEV;
 
 const STORAGE_KEYS = {
   email: "quicktemp_email",
@@ -403,7 +404,7 @@ async function generateEmail() {
     clearSession();
     showCurrentEmail("");
     renderEmptyInbox("No emails yet", "Something went wrong while creating your inbox. Please try again.");
-    showError("Something went wrong, please try again.");
+    showError("Temporary email service failed. Please try again later.");
   } finally {
     stopLoading();
   }
@@ -446,7 +447,10 @@ async function createRandomAccount(domain) {
     }
 
     if (response.status !== 422) {
-      throw new Error(account?.message || "Could not create Mail.tm account.");
+      const error = new Error(account?.message || "Could not create Mail.tm account.");
+      error.status = response.status;
+      error.data = account;
+      throw error;
     }
   }
 
