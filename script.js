@@ -115,10 +115,10 @@ function hasMailboxSession() {
 function updateControls() {
   const hasSession = hasMailboxSession();
 
-  if (generateBtn) generateBtn.disabled = isBusy;
+  if (generateBtn) generateBtn.disabled = isBusy || inboxRequestInFlight;
   if (copyBtn) copyBtn.disabled = isBusy || !hasSession;
   if (refreshBtn) refreshBtn.disabled = isBusy || !hasSession || inboxRequestInFlight;
-  if (resetBtn) resetBtn.disabled = isBusy || !hasSession;
+  if (resetBtn) resetBtn.disabled = isBusy || !hasSession || inboxRequestInFlight;
 }
 
 function startLoading(button, loadingText) {
@@ -313,7 +313,6 @@ async function getFirstAvailableDomain() {
 }
 
 async function createRandomAccount(domain) {
-  // A random address may already exist, so we try a few times.
   for (let attempt = 1; attempt <= 5; attempt += 1) {
     const address = `${createRandomUsername()}@${domain}`;
     const password = createRandomPassword();
@@ -337,7 +336,6 @@ async function createRandomAccount(domain) {
       return { address, password, account };
     }
 
-    // Status 422 can happen when the random address already exists.
     if (response.status !== 422) {
       throw new Error(account?.message || "Could not create Mail.tm account.");
     }
@@ -619,7 +617,6 @@ function createInfoLine(label, value) {
 }
 
 function getSafePlainMessageBody(message) {
-  // Prefer the plain text version of the message.
   if (typeof message.text === "string" && message.text.trim()) {
     return message.text.trim();
   }
@@ -632,7 +629,6 @@ function getSafePlainMessageBody(message) {
     return message.intro;
   }
 
-  // If only HTML exists, convert it to text. Do not insert untrusted HTML into the page.
   if (message.html) {
     const htmlString = Array.isArray(message.html) ? message.html.join("\n") : String(message.html);
     const parsedHtml = new DOMParser().parseFromString(htmlString, "text/html");
