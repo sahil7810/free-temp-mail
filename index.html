@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QuickTemp Mail - Free Temporary Email, Temp Mail & Disposable Inbox</title>
-  <meta name="description" content="QuickTemp Mail is a free temporary email and temp mail inbox powered by Mail.tm API. Create a disposable email for spam protection, newsletters, trials, and privacy-friendly testing." />
+  <meta name="description" content="QuickTemp Mail is a free temporary email and temp mail inbox. Create a disposable email for spam protection, newsletters, trials, and privacy-friendly testing." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://quicktemp-mail.pages.dev/" />
   <link rel="manifest" href="manifest.json" />
@@ -74,11 +74,11 @@
         <aside class="hero-card" aria-label="Temporary email preview">
           <div class="status-pill">
             <span class="status-dot" aria-hidden="true"></span>
-            Mail.tm API ready
+            Service ready
           </div>
           <p class="preview-label">Your disposable email inbox</p>
           <p class="preview-email">Generate one below</p>
-          <p class="muted-text">Use this free temporary email tool when a short-term inbox is enough. Do not use it for important accounts.</p>
+          <p class="muted-text">Your temporary inbox is ready when you generate an email. Do not use it for important accounts.</p>
         </aside>
       </div>
     </section>
@@ -99,7 +99,7 @@
             <div class="email-row">
               <input id="emailAddress" type="text" value="Click Generate Email" readonly aria-describedby="emailHelp importantNotice" title="Tap to copy email" />
             </div>
-            <p id="emailHelp" class="help-text">Tap the email box to copy your address. This static app uses the public Mail.tm API directly from your browser.</p>
+            <p id="emailHelp" class="help-text">Tap the email box to copy your address. This tool creates a short-term disposable inbox for testing, newsletters, and spam protection.</p>
             <p id="importantNotice" class="notice-text">Do not use temporary email for important accounts.</p>
           </div>
 
@@ -156,20 +156,20 @@
         <div class="section-heading center-heading">
           <p class="eyebrow">Simple flow</p>
           <h2>How QuickTemp Mail Works</h2>
-          <p>QuickTemp Mail is a static temp mail website. It talks to Mail.tm from your browser and does not need a backend.</p>
+          <p>QuickTemp Mail creates a short-term disposable inbox in your browser. No account setup, server setup, or secret key is needed.</p>
         </div>
 
         <div class="steps-grid">
           <article class="step-card">
             <span class="step-number">1</span>
             <h3>Generate</h3>
-            <p>Create a free temporary email using an available Mail.tm domain.</p>
+            <p>Create a free temporary email address in one tap.</p>
           </article>
 
           <article class="step-card">
             <span class="step-number">2</span>
             <h3>Use</h3>
-            <p>Copy the disposable email address and use it for spam protection or testing.</p>
+            <p>Copy the disposable email address and use it for newsletters, testing, or spam protection.</p>
           </article>
 
           <article class="step-card">
@@ -192,12 +192,12 @@
         <div class="content-grid">
           <article class="content-card">
             <h2>What is Temporary Email?</h2>
-            <p>A temporary email is a short-term email address that you can use when you do not want to share your main inbox. It is useful when you want to read a confirmation message, test a form, join a newsletter, or try a simple online tool without filling your real inbox with extra mail. A temp mail inbox is usually quick to create and easy to reset. QuickTemp Mail uses the Mail.tm API to create a disposable email address in your browser. It is not meant for important accounts, recovery emails, banking, school, or government services. Use it for low-risk tasks where a short-term inbox is enough.</p>
+            <p>A temporary email is a short-term email address that you can use when you do not want to share your main inbox. It is useful when you want to read a confirmation message, test a form, join a newsletter, or try a simple online tool without filling your real inbox with extra mail. A temp mail inbox is usually quick to create and easy to reset. QuickTemp Mail creates a disposable email address that you can use for low-risk tasks where a short-term inbox is enough. It is not meant for important accounts, recovery emails, banking, school, or government services.</p>
           </article>
 
           <article class="content-card">
             <h2>How Disposable Email Works</h2>
-            <p>A disposable email works by creating a new address on a supported temporary mail domain. After the address is created, messages sent to that address can be fetched from the inbox. QuickTemp Mail keeps this flow simple: generate an email, copy it, use it where appropriate, and refresh the inbox to check for messages. The website stores the current temporary email session in your browser localStorage so the inbox can continue after a page refresh. The message body is shown as safe plain text where possible. This helps avoid placing untrusted email HTML directly inside the page.</p>
+            <p>A disposable email works by creating a new short-term address. After the address is created, messages sent to that address can be fetched from the inbox. QuickTemp Mail keeps this flow simple: generate an email, copy it, use it where appropriate, and refresh the inbox to check for messages. The website saves the current temporary email session in your browser so the inbox can continue after a page refresh. The message body is shown as safe plain text where possible, which helps keep the page clean and readable.</p>
           </article>
 
           <article class="content-card">
@@ -212,7 +212,7 @@
 
           <article class="content-card">
             <h2>Temporary Email for Testing</h2>
-            <p>Temporary email is useful for students, developers, creators, and website owners who need to test simple email flows. You can test a contact form, newsletter signup, demo login, or project notification without filling your main inbox. QuickTemp Mail keeps the process beginner-friendly because it runs as a static site with HTML, CSS, and JavaScript. There is no npm setup, no server, no database, and no API key. Just generate a disposable email, send a test message, and refresh the inbox. Keep testing honest and safe, and avoid using temporary email for any harmful or misleading activity.</p>
+            <p>Temporary email is useful for students, developers, creators, and website owners who need to test simple email flows. You can test a contact form, newsletter signup, demo login, or project notification without filling your main inbox. QuickTemp Mail keeps the process beginner-friendly because it runs as a static site with HTML, CSS, and JavaScript. Just generate a disposable email, send a test message, and refresh the inbox. Keep testing honest and safe, and avoid using temporary email for any harmful or misleading activity.</p>
           </article>
         </div>
       </div>
@@ -248,8 +248,8 @@
           </details>
 
           <details class="faq-item">
-            <summary>Does QuickTemp Mail need an API key?</summary>
-            <p>No. The website uses the public Mail.tm API from the browser and does not require an API key.</p>
+            <summary>Does QuickTemp Mail need setup?</summary>
+            <p>No. You can generate a temporary inbox from the page without creating a personal account on this website.</p>
           </details>
         </div>
       </div>
@@ -257,16 +257,22 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-content">
-      <div>
+    <div class="container footer-shell">
+      <div class="footer-brand-block">
         <a class="footer-logo" href="index.html">QuickTemp Mail</a>
         <p>Built for privacy-friendly testing and spam protection.</p>
       </div>
-      <div class="footer-links" aria-label="Footer links">
+
+      <nav class="footer-links" aria-label="Footer links">
         <a href="index.html">Home</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="terms.html">Terms</a>
+      </nav>
+
+      <div class="footer-meta" aria-label="Project credits">
+        <span>Built by Alam</span>
         <span>Powered by Mail.tm API</span>
+        <span>© 2026 QuickTemp Mail. All rights reserved.</span>
       </div>
     </div>
   </footer>
