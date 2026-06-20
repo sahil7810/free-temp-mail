@@ -17,6 +17,7 @@
   <meta property="og:image" content="https://quicktemp-mail.pages.dev/favicon.svg" />
 
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="security-ui.css" />
 
   <script type="application/ld+json">
   {
@@ -57,7 +58,7 @@
         <a href="terms.html">Terms</a>
       </div>
 
-      <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode">
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
         <span aria-hidden="true">🌙</span>
         <span class="theme-toggle-text">Dark Mode</span>
       </button>
@@ -118,10 +119,10 @@
           </div>
 
           <div class="button-grid" aria-label="Temporary email controls">
-            <button id="generateBtn" class="btn btn-primary btn-generate" type="button" onclick="generateEmail()">Generate Email</button>
-            <button id="copyBtn" class="btn btn-secondary" type="button" onclick="copyEmail()" disabled>Copy Email</button>
-            <button id="refreshBtn" class="btn btn-secondary" type="button" onclick="refreshInbox()" disabled>Refresh Inbox</button>
-            <button id="resetBtn" class="btn btn-danger" type="button" onclick="resetEmail()" disabled>Reset Email</button>
+            <button id="generateBtn" class="btn btn-primary btn-generate" type="button">Generate Email</button>
+            <button id="copyBtn" class="btn btn-secondary" type="button" disabled>Copy Email</button>
+            <button id="refreshBtn" class="btn btn-secondary" type="button" disabled>Refresh Inbox</button>
+            <button id="resetBtn" class="btn btn-danger" type="button" disabled>Reset Email</button>
           </div>
 
           <div class="status-row">
