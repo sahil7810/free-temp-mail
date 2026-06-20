@@ -15,6 +15,21 @@ It creates a disposable email inbox using the public Mail.tm API. The project is
 
 No React, Next.js, Node.js, Firebase, backend, database, npm, build step, paid service, or API key is required.
 
+## Design Style
+
+The current design uses a premium cyber/SaaS visual style:
+
+- Dark mode with deep navy background
+- Light mode with clean soft-gray background
+- Glassmorphism cards
+- Electric blue, cyan, violet, and purple accents
+- Subtle glowing gradients
+- Lightweight CSS-only grid and particle effects
+- Sticky glass-effect header
+- Modern SaaS-style footer
+- Mobile-first responsive layout
+- Reduced-motion support
+
 ## Features
 
 - Clean mobile-first responsive homepage
