@@ -6,6 +6,7 @@ const API_BASE = "https://api.mail.tm";
 const REFRESH_COOLDOWN_MS = 10000;
 const AUTO_REFRESH_MS = 15000;
 const TOAST_DURATION_MS = 3600;
+const SAFE_URL_PATTERN = /(https?:\/\/[^\s<>"']+)/gi;
 
 const STORAGE_KEYS = {
   email: "quicktemp_email",
@@ -597,14 +598,74 @@ function renderMessageDetails(message) {
 
   const body = document.createElement("div");
   body.className = "message-body";
-  body.textContent = getSafePlainMessageBody(message);
+  renderSafeMessageBody(getSafePlainMessageBody(message), body);
 
   const note = document.createElement("p");
   note.className = "message-note";
-  note.textContent = "Showing safe plain text only. HTML email content is not inserted into the page.";
+  note.textContent = "Showing safe plain text only. Links are shown for convenience. Only open links you trust.";
 
   info.append(from, subject, date);
   messageDetails.replaceChildren(title, info, body, note);
+}
+
+function renderSafeMessageBody(text, container) {
+  container.replaceChildren();
+
+  if (!text) {
+    container.textContent = "This message has no readable plain text content.";
+    return;
+  }
+
+  SAFE_URL_PATTERN.lastIndex = 0;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = SAFE_URL_PATTERN.exec(text)) !== null) {
+    const rawUrl = match[0];
+
+    if (match.index > lastIndex) {
+      container.append(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+
+    const { cleanUrl, trailingText } = cleanUrlText(rawUrl);
+
+    if (cleanUrl) {
+      container.append(createSafeLink(cleanUrl));
+    }
+
+    if (trailingText) {
+      container.append(document.createTextNode(trailingText));
+    }
+
+    lastIndex = match.index + rawUrl.length;
+  }
+
+  if (lastIndex < text.length) {
+    container.append(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
+function cleanUrlText(rawUrl) {
+  let cleanUrl = rawUrl;
+  let trailingText = "";
+
+  while (/[.,!?;:)\]]$/.test(cleanUrl)) {
+    trailingText = cleanUrl.slice(-1) + trailingText;
+    cleanUrl = cleanUrl.slice(0, -1);
+  }
+
+  return { cleanUrl, trailingText };
+}
+
+function createSafeLink(url) {
+  const link = document.createElement("a");
+  link.className = "message-link";
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer nofollow";
+  link.title = url;
+  link.textContent = url.startsWith("https://") ? "Open secure link" : "Open link";
+  return link;
 }
 
 function createInfoLine(label, value) {
