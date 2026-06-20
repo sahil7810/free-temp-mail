@@ -33,6 +33,7 @@ const resetBtn = document.getElementById("resetBtn");
 const year = document.getElementById("year");
 
 let isBusy = false;
+let inboxRequestInFlight = false;
 let activeLoadingButton = null;
 let autoRefreshTimer = null;
 
@@ -116,7 +117,7 @@ function updateControls() {
 
   if (generateBtn) generateBtn.disabled = isBusy;
   if (copyBtn) copyBtn.disabled = isBusy || !hasSession;
-  if (refreshBtn) refreshBtn.disabled = isBusy || !hasSession;
+  if (refreshBtn) refreshBtn.disabled = isBusy || !hasSession || inboxRequestInFlight;
   if (resetBtn) resetBtn.disabled = isBusy || !hasSession;
 }
 
@@ -391,7 +392,12 @@ async function refreshInbox(options = {}) {
   const isAutomatic = Boolean(options.automatic);
   const isSilent = Boolean(options.silent);
 
-  if (isBusy) return;
+  if (isBusy || inboxRequestInFlight) {
+    if (!isSilent) {
+      setStatus("Inbox is already refreshing. Please wait.", "warning");
+    }
+    return;
+  }
 
   if (!isSilent) {
     clearError();
@@ -420,7 +426,9 @@ async function refreshInbox(options = {}) {
     return;
   }
 
+  inboxRequestInFlight = true;
   localStorage.setItem(STORAGE_KEYS.lastRefresh, String(now));
+  updateControls();
 
   if (!isSilent) {
     startLoading(refreshBtn, "Refreshing...");
@@ -445,8 +453,11 @@ async function refreshInbox(options = {}) {
     console.error(error);
     handleApiError(error, isSilent);
   } finally {
+    inboxRequestInFlight = false;
     if (!isSilent) {
       stopLoading();
+    } else {
+      updateControls();
     }
   }
 }
