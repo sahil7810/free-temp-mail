@@ -1,6 +1,6 @@
-// QuickTemp Mail frontend-only API connection.
-// This file uses the public Mail.tm API directly from the browser.
-// No API key, backend, database, Firebase, or paid service is used.
+// QuickTemp Mail
+// Beginner-friendly frontend code for the Mail.tm API.
+// This is a static website: no backend, no database, no npm, and no API key.
 
 const API_BASE = "https://api.mail.tm";
 const REFRESH_COOLDOWN_MS = 10000;
@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
 
 const emailInput = document.getElementById("emailAddress");
 const statusMessage = document.getElementById("statusMessage");
+const errorBanner = document.getElementById("errorBanner");
 const inboxList = document.getElementById("inboxList");
 const messageDetails = document.getElementById("messageDetails");
 const generateBtn = document.getElementById("generateBtn");
@@ -27,12 +28,18 @@ const year = document.getElementById("year");
 let isBusy = false;
 let activeLoadingButton = null;
 
-if (year) {
-  year.textContent = new Date().getFullYear();
-}
+initApp();
 
-loadSavedTheme();
-loadSavedMailbox();
+function initApp() {
+  if (year) {
+    year.textContent = new Date().getFullYear();
+  }
+
+  loadSavedTheme();
+  loadSavedMailbox();
+  setupFaqAccordion();
+  updateControls();
+}
 
 function loadSavedTheme() {
   const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
@@ -46,14 +53,16 @@ function loadSavedTheme() {
 function loadSavedMailbox() {
   const session = getSavedSession();
 
-  if (session.email && session.token) {
-    showCurrentEmail(session.email);
+  if (!session.email || !session.token) {
+    renderEmptyInbox("No emails yet", "Generate a free temporary email and refresh your inbox to check for messages.");
     clearMessageDetails("Select a message from the inbox to view details here.");
-    renderEmptyInbox("No emails yet", "Click Refresh Inbox to check your saved temporary email.");
-    updateStatus("Saved temporary email restored. Click Refresh Inbox to check messages.");
+    return;
   }
 
-  updateControls();
+  showCurrentEmail(session.email);
+  renderEmptyInbox("Saved inbox found", "Click Refresh Inbox to check your saved temporary email.");
+  clearMessageDetails("Select a message from the inbox to view details here.");
+  setStatus("Saved temporary email restored. Click Refresh Inbox to check messages.");
 }
 
 function getSavedSession() {
@@ -86,10 +95,12 @@ function hasMailboxSession() {
 }
 
 function updateControls() {
+  const hasSession = hasMailboxSession();
+
   if (generateBtn) generateBtn.disabled = isBusy;
-  if (copyBtn) copyBtn.disabled = isBusy || !hasMailboxSession();
-  if (refreshBtn) refreshBtn.disabled = isBusy || !hasMailboxSession();
-  if (resetBtn) resetBtn.disabled = isBusy || !hasMailboxSession();
+  if (copyBtn) copyBtn.disabled = isBusy || !hasSession;
+  if (refreshBtn) refreshBtn.disabled = isBusy || !hasSession;
+  if (resetBtn) resetBtn.disabled = isBusy || !hasSession;
 }
 
 function startLoading(button, loadingText) {
@@ -116,9 +127,30 @@ function stopLoading() {
   updateControls();
 }
 
-function updateStatus(message) {
-  if (statusMessage) {
-    statusMessage.textContent = message;
+function setStatus(message, type = "") {
+  if (!statusMessage) return;
+
+  statusMessage.textContent = message;
+  statusMessage.className = "status-message";
+
+  if (type) {
+    statusMessage.classList.add(type);
+  }
+}
+
+function showError(message) {
+  setStatus(message, "error");
+
+  if (errorBanner) {
+    errorBanner.textContent = message;
+    errorBanner.hidden = false;
+  }
+}
+
+function clearError() {
+  if (errorBanner) {
+    errorBanner.textContent = "";
+    errorBanner.hidden = true;
   }
 }
 
@@ -134,13 +166,18 @@ function renderEmptyInbox(title, description) {
   const item = document.createElement("li");
   item.className = "empty-state";
 
+  const icon = document.createElement("span");
+  icon.className = "empty-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "📭";
+
   const strong = document.createElement("strong");
   strong.textContent = title;
 
   const span = document.createElement("span");
   span.textContent = description;
 
-  item.append(strong, span);
+  item.append(icon, strong, span);
   inboxList.replaceChildren(item);
 }
 
@@ -165,7 +202,7 @@ async function apiRequest(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    const error = new Error(data?.message || `API request failed with status ${response.status}`);
+    const error = new Error(data?.message || `Request failed with status ${response.status}`);
     error.status = response.status;
     error.data = data;
     throw error;
@@ -175,12 +212,14 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 async function generateEmail() {
+  clearError();
   startLoading(generateBtn, "Creating email...");
-  updateStatus("Creating email...");
+  setStatus("Creating email...");
 
   try {
     clearSession();
-    renderEmptyInbox("No emails yet", "Your new inbox will appear here after you refresh.");
+    showCurrentEmail("");
+    renderEmptyInbox("Creating inbox", "Please wait while your temporary email is created.");
     clearMessageDetails("Select a message from the inbox to view details here.");
 
     const domain = await getFirstAvailableDomain();
@@ -195,12 +234,14 @@ async function generateEmail() {
     });
 
     showCurrentEmail(accountData.address);
-    updateStatus("Email created. Copy it and use Refresh Inbox to check messages.");
+    renderEmptyInbox("No emails yet", "Use your temporary email, then refresh inbox after a few seconds.");
+    setStatus("Email created successfully. You can copy it now.", "success");
   } catch (error) {
     console.error(error);
-    showCurrentEmail("");
     clearSession();
-    updateStatus("Something went wrong, please try again.");
+    showCurrentEmail("");
+    renderEmptyInbox("No emails yet", "Something went wrong while creating your inbox. Please try again.");
+    showError("Something went wrong, please try again.");
   } finally {
     stopLoading();
   }
@@ -219,7 +260,7 @@ async function getFirstAvailableDomain() {
 }
 
 async function createRandomAccount(domain) {
-  // Try a few times because a random username can already exist.
+  // A random address may already exist, so we try a few times.
   for (let attempt = 1; attempt <= 5; attempt += 1) {
     const address = `${createRandomUsername()}@${domain}`;
     const password = createRandomPassword();
@@ -243,8 +284,7 @@ async function createRandomAccount(domain) {
       return { address, password, account };
     }
 
-    // 422 usually means the generated address already exists or the request was invalid.
-    // If it already exists, try another random address.
+    // Status 422 can happen when the random address already exists.
     if (response.status !== 422) {
       throw new Error(account?.message || "Could not create Mail.tm account.");
     }
@@ -275,27 +315,29 @@ function createRandomPassword() {
 }
 
 async function copyEmail() {
+  clearError();
   const session = getSavedSession();
 
   if (!session.email) {
-    updateStatus("Generate an email first, then copy it.");
+    setStatus("Generate an email first, then copy it.", "warning");
     return;
   }
 
   try {
     await navigator.clipboard.writeText(session.email);
-    updateStatus("Email copied to clipboard.");
+    setStatus("Email copied successfully.", "success");
   } catch (error) {
     console.error(error);
-    updateStatus("Copy failed. Please select and copy the email manually.");
+    setStatus("Copy failed. Please select and copy the email manually.", "warning");
   }
 }
 
 async function refreshInbox() {
+  clearError();
   const session = getSavedSession();
 
   if (!session.token) {
-    updateStatus("Generate an email first, then refresh the inbox.");
+    setStatus("Generate an email first, then refresh the inbox.", "warning");
     return;
   }
 
@@ -305,13 +347,13 @@ async function refreshInbox() {
 
   if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
     const secondsLeft = Math.ceil((REFRESH_COOLDOWN_MS - timeSinceLastRefresh) / 1000);
-    updateStatus(`Please wait ${secondsLeft} second(s) before refreshing again.`);
+    setStatus(`Please wait ${secondsLeft} second(s) before refreshing again.`, "warning");
     return;
   }
 
   localStorage.setItem(STORAGE_KEYS.lastRefresh, String(now));
   startLoading(refreshBtn, "Refreshing...");
-  updateStatus("Refreshing inbox...");
+  setStatus("Refreshing inbox...");
 
   try {
     const data = await apiRequest("/messages", {
@@ -320,12 +362,7 @@ async function refreshInbox() {
 
     const messages = data?.["hydra:member"] || [];
     renderInboxMessages(messages);
-
-    if (messages.length === 0) {
-      updateStatus("No emails yet.");
-    } else {
-      updateStatus("Inbox refreshed.");
-    }
+    setStatus(messages.length ? "Inbox refreshed." : "No emails yet.", messages.length ? "success" : "");
   } catch (error) {
     console.error(error);
     handleApiError(error);
@@ -388,15 +425,16 @@ function renderInboxMessages(messages) {
 }
 
 async function loadMessageDetails(messageId) {
+  clearError();
   const session = getSavedSession();
 
   if (!session.token || !messageId) {
-    updateStatus("Message cannot be loaded right now.");
+    setStatus("Message cannot be loaded right now.", "warning");
     return;
   }
 
   startLoading(null, "Loading message...");
-  updateStatus("Loading message...");
+  setStatus("Loading message...");
 
   try {
     const message = await apiRequest(`/messages/${encodeURIComponent(messageId)}`, {
@@ -404,7 +442,7 @@ async function loadMessageDetails(messageId) {
     });
 
     renderMessageDetails(message);
-    updateStatus("Message loaded.");
+    setStatus("Message loaded.", "success");
   } catch (error) {
     console.error(error);
     handleApiError(error);
@@ -431,8 +469,6 @@ function renderMessageDetails(message) {
   const date = document.createElement("span");
   date.textContent = `Date: ${formatDate(message.createdAt)}`;
 
-  info.append(from, to, date);
-
   const body = document.createElement("div");
   body.className = "message-body";
   body.textContent = getSafePlainMessageBody(message);
@@ -441,11 +477,12 @@ function renderMessageDetails(message) {
   note.className = "message-note";
   note.textContent = "Showing safe plain text only. HTML email content is not inserted into the page.";
 
+  info.append(from, to, date);
   messageDetails.replaceChildren(title, info, body, note);
 }
 
 function getSafePlainMessageBody(message) {
-  // Prefer real plain text from the API.
+  // Prefer the plain text version of the message.
   if (typeof message.text === "string" && message.text.trim()) {
     return message.text.trim();
   }
@@ -454,13 +491,11 @@ function getSafePlainMessageBody(message) {
     return message.text.join("\n").trim();
   }
 
-  // Then use intro text if available.
   if (message.intro) {
     return message.intro;
   }
 
-  // If only HTML exists, convert it to text instead of placing HTML on the page.
-  // This avoids unsafe innerHTML usage with untrusted email content.
+  // If only HTML exists, convert it to text. Do not insert untrusted HTML into the page.
   if (message.html) {
     const htmlString = Array.isArray(message.html) ? message.html.join("\n") : String(message.html);
     const parsedHtml = new DOMParser().parseFromString(htmlString, "text/html");
@@ -503,19 +538,25 @@ function formatDate(dateValue) {
 
 function handleApiError(error) {
   if (error.status === 401) {
-    updateStatus("Your email session expired. Please reset and generate a new email.");
+    showError("Your email session expired. Please reset and generate a new email.");
     return;
   }
 
-  updateStatus("Something went wrong, please try again.");
+  if (error.status === 429) {
+    showError("Too many requests. Please wait a little and try again.");
+    return;
+  }
+
+  showError("Something went wrong, please try again.");
 }
 
 function resetEmail() {
+  clearError();
   clearSession();
   showCurrentEmail("");
-  renderEmptyInbox("No emails yet", "Generate an email and refresh your inbox to check for messages.");
+  renderEmptyInbox("No emails yet", "Generate a free temporary email and refresh your inbox to check for messages.");
   clearMessageDetails("Select a message from the inbox to view details here.");
-  updateStatus("Temporary email reset.");
+  setStatus("Temporary email reset.");
   updateControls();
 }
 
@@ -539,4 +580,20 @@ function updateThemeButton(theme) {
   if (themeButtonIcon) {
     themeButtonIcon.textContent = theme === "dark" ? "☀️" : "🌙";
   }
+}
+
+function setupFaqAccordion() {
+  const faqItems = document.querySelectorAll("[data-faq-list] details");
+
+  faqItems.forEach((item) => {
+    item.addEventListener("toggle", () => {
+      if (!item.open) return;
+
+      faqItems.forEach((otherItem) => {
+        if (otherItem !== item) {
+          otherItem.open = false;
+        }
+      });
+    });
+  });
 }
