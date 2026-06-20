@@ -6,7 +6,10 @@ const API_BASE = "https://api.mail.tm";
 const REFRESH_COOLDOWN_MS = 10000;
 const AUTO_REFRESH_MS = 15000;
 const TOAST_DURATION_MS = 3600;
+const MAX_STORED_MESSAGE_IDS = 120;
+const MAX_MESSAGE_BODY_CHARS = 12000;
 const SAFE_URL_PATTERN = /(https?:\/\/[^\s<>"']+)/gi;
+const DEBUG_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
 const STORAGE_KEYS = {
   email: "quicktemp_email",
@@ -38,6 +41,7 @@ let isBusy = false;
 let inboxRequestInFlight = false;
 let activeLoadingButton = null;
 let autoRefreshTimer = null;
+let currentMessageRequestId = 0;
 
 initApp();
 
@@ -70,10 +74,19 @@ function initApp() {
     themeToggleBtn.addEventListener("click", toggleTheme);
   }
 
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("beforeunload", stopAutoRefresh);
+
   loadSavedTheme();
   loadSavedMailbox();
   setupFaqAccordion();
   updateControls();
+}
+
+function debugError(error) {
+  if (DEBUG_MODE) {
+    console.error(error);
+  }
 }
 
 function loadSavedTheme() {
@@ -189,6 +202,10 @@ function setStatus(message, type = "") {
 function showToast(message, type = "") {
   if (!toastContainer) return;
 
+  while (toastContainer.childElementCount >= 3) {
+    toastContainer.firstElementChild?.remove();
+  }
+
   const toast = document.createElement("div");
   toast.className = type ? `toast ${type}` : "toast";
   toast.textContent = message;
@@ -263,7 +280,18 @@ function clearMessageDetails(message) {
 }
 
 async function apiRequest(endpoint, options = {}) {
-  const response = await fetch(`${API_BASE}${endpoint}`, options);
+  if (!endpoint.startsWith("/")) {
+    throw new Error("Invalid API endpoint.");
+  }
+
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    cache: "no-store",
+    ...options,
+    headers: {
+      Accept: "application/json",
+      ...(options.headers || {})
+    }
+  });
 
   let data = null;
   try {
@@ -312,7 +340,7 @@ async function generateEmail() {
     showToast("Email generated", "success");
     startAutoRefresh();
   } catch (error) {
-    console.error(error);
+    debugError(error);
     clearSession();
     showCurrentEmail("");
     renderEmptyInbox("No emails yet", "Something went wrong while creating your inbox. Please try again.");
@@ -341,7 +369,9 @@ async function createRandomAccount(domain) {
 
     const response = await fetch(`${API_BASE}/accounts`, {
       method: "POST",
+      cache: "no-store",
       headers: {
+        Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ address, password })
@@ -402,7 +432,7 @@ async function copyEmail() {
     setStatus("Email copied successfully.", "success");
     showToast("Email copied", "success");
   } catch (error) {
-    console.error(error);
+    debugError(error);
     setStatus("Copy failed. Please select and copy the email manually.", "warning");
     showToast("Copy failed", "warning");
   }
@@ -411,6 +441,10 @@ async function copyEmail() {
 async function refreshInbox(options = {}) {
   const isAutomatic = Boolean(options.automatic);
   const isSilent = Boolean(options.silent);
+
+  if (isAutomatic && document.hidden) {
+    return;
+  }
 
   if (isBusy || inboxRequestInFlight) {
     if (!isSilent) {
@@ -460,7 +494,7 @@ async function refreshInbox(options = {}) {
       headers: getAuthHeaders(session.token)
     });
 
-    const messages = data?.["hydra:member"] || [];
+    const messages = Array.isArray(data?.["hydra:member"]) ? data["hydra:member"] : [];
     const newCount = renderInboxMessages(messages);
 
     if (!isSilent) {
@@ -470,7 +504,7 @@ async function refreshInbox(options = {}) {
       showToast(`${newCount} new email${newCount === 1 ? "" : "s"}`, "success");
     }
   } catch (error) {
-    console.error(error);
+    debugError(error);
     handleApiError(error, isSilent);
   } finally {
     inboxRequestInFlight = false;
@@ -491,9 +525,10 @@ function getAuthHeaders(token) {
 function renderInboxMessages(messages) {
   if (!inboxList) return 0;
 
-  updateInboxCount(messages.length);
+  const safeMessages = Array.isArray(messages) ? messages.slice(0, 50) : [];
+  updateInboxCount(safeMessages.length);
 
-  if (!messages.length) {
+  if (!safeMessages.length) {
     renderEmptyInbox("No emails yet", "Try again after a few seconds if you are waiting for a message.");
     clearMessageDetails("Select a message from the inbox to view details here.");
     return 0;
@@ -503,7 +538,7 @@ function renderInboxMessages(messages) {
   const readIds = getStoredIdSet(STORAGE_KEYS.readMessageIds);
   let newCount = 0;
 
-  const items = messages.map((message) => {
+  const items = safeMessages.map((message) => {
     const messageId = message.id;
     const isNewMessage = messageId && !knownIds.has(messageId);
     const isUnread = messageId && !readIds.has(messageId);
@@ -553,7 +588,7 @@ function renderInboxMessages(messages) {
 
     const intro = document.createElement("p");
     intro.className = "message-preview";
-    intro.textContent = message.intro || "No preview available.";
+    intro.textContent = limitText(message.intro || "No preview available.", 320);
 
     button.addEventListener("click", () => {
       if (messageId) {
@@ -572,7 +607,7 @@ function renderInboxMessages(messages) {
   });
 
   inboxList.replaceChildren(...items);
-  saveKnownMessageIds(messages);
+  saveKnownMessageIds(safeMessages);
   return newCount;
 }
 
@@ -586,6 +621,9 @@ async function loadMessageDetails(messageId) {
     return;
   }
 
+  const requestId = currentMessageRequestId + 1;
+  currentMessageRequestId = requestId;
+
   startLoading(null, "Loading message...");
   setStatus("Loading message...");
 
@@ -594,10 +632,12 @@ async function loadMessageDetails(messageId) {
       headers: getAuthHeaders(session.token)
     });
 
+    if (requestId !== currentMessageRequestId) return;
+
     renderMessageDetails(message);
     setStatus("Message loaded.", "success");
   } catch (error) {
-    console.error(error);
+    debugError(error);
     handleApiError(error, false);
   } finally {
     stopLoading();
@@ -632,7 +672,9 @@ function renderMessageDetails(message) {
 function renderSafeMessageBody(text, container) {
   container.replaceChildren();
 
-  if (!text) {
+  const safeText = limitText(text || "", MAX_MESSAGE_BODY_CHARS);
+
+  if (!safeText) {
     container.textContent = "This message has no readable plain text content.";
     return;
   }
@@ -641,11 +683,11 @@ function renderSafeMessageBody(text, container) {
   let lastIndex = 0;
   let match;
 
-  while ((match = SAFE_URL_PATTERN.exec(text)) !== null) {
+  while ((match = SAFE_URL_PATTERN.exec(safeText)) !== null) {
     const rawUrl = match[0];
 
     if (match.index > lastIndex) {
-      container.append(document.createTextNode(text.slice(lastIndex, match.index)));
+      container.append(document.createTextNode(safeText.slice(lastIndex, match.index)));
     }
 
     const { cleanUrl, trailingText } = cleanUrlText(rawUrl);
@@ -661,8 +703,8 @@ function renderSafeMessageBody(text, container) {
     lastIndex = match.index + rawUrl.length;
   }
 
-  if (lastIndex < text.length) {
-    container.append(document.createTextNode(text.slice(lastIndex)));
+  if (lastIndex < safeText.length) {
+    container.append(document.createTextNode(safeText.slice(lastIndex)));
   }
 }
 
@@ -670,7 +712,7 @@ function cleanUrlText(rawUrl) {
   let cleanUrl = rawUrl;
   let trailingText = "";
 
-  while (/[.,!?;:)\]]$/.test(cleanUrl)) {
+  while (/[.,!?;:)\]}]$/.test(cleanUrl)) {
     trailingText = cleanUrl.slice(-1) + trailingText;
     cleanUrl = cleanUrl.slice(0, -1);
   }
@@ -679,14 +721,25 @@ function cleanUrlText(rawUrl) {
 }
 
 function createSafeLink(url) {
-  const link = document.createElement("a");
-  link.className = "message-link";
-  link.href = url;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer nofollow";
-  link.title = url;
-  link.textContent = url.startsWith("https://") ? "Open secure link" : "Open link";
-  return link;
+  try {
+    const parsedUrl = new URL(url);
+
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return document.createTextNode("[unsafe link blocked]");
+    }
+
+    const link = document.createElement("a");
+    link.className = "message-link";
+    link.href = parsedUrl.href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer nofollow";
+    link.title = parsedUrl.href;
+    link.textContent = parsedUrl.protocol === "https:" ? "Open secure link" : "Open link";
+    return link;
+  } catch (error) {
+    debugError(error);
+    return document.createTextNode("[invalid link]");
+  }
 }
 
 function createInfoLine(label, value) {
@@ -700,30 +753,41 @@ function createInfoLine(label, value) {
 
 function getSafePlainMessageBody(message) {
   if (typeof message.text === "string" && message.text.trim()) {
-    return message.text.trim();
+    return limitText(message.text.trim(), MAX_MESSAGE_BODY_CHARS);
   }
 
   if (Array.isArray(message.text) && message.text.length > 0) {
-    return message.text.join("\n").trim();
+    return limitText(message.text.join("\n").trim(), MAX_MESSAGE_BODY_CHARS);
   }
 
   if (message.intro) {
-    return message.intro;
+    return limitText(message.intro, MAX_MESSAGE_BODY_CHARS);
   }
 
   if (message.html) {
     const htmlString = Array.isArray(message.html) ? message.html.join("\n") : String(message.html);
     const parsedHtml = new DOMParser().parseFromString(htmlString, "text/html");
     const plainText = parsedHtml.body.textContent || "";
-    return plainText.trim() || "This HTML email has no readable plain text content.";
+    return limitText(plainText.trim() || "This HTML email has no readable plain text content.", MAX_MESSAGE_BODY_CHARS);
   }
 
   return "This message has no readable plain text content.";
 }
 
+function limitText(value, maxLength) {
+  const text = String(value || "");
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}\n\n[Message trimmed for safety.]`;
+}
+
 function formatSender(sender) {
   if (!sender) return "Unknown sender";
-  return sender.name ? `${sender.name} <${sender.address}>` : sender.address || "Unknown sender";
+
+  const address = sender.address || "";
+  const name = sender.name || "";
+
+  if (name && address) return `${name} <${address}>`;
+  return name || address || "Unknown sender";
 }
 
 function formatRelativeTime(dateValue) {
@@ -758,14 +822,17 @@ function formatFullDate(dateValue) {
 function getStoredIdSet(key) {
   try {
     const ids = JSON.parse(localStorage.getItem(key) || "[]");
-    return new Set(Array.isArray(ids) ? ids : []);
+    const safeIds = Array.isArray(ids) ? ids.filter(Boolean).slice(-MAX_STORED_MESSAGE_IDS) : [];
+    return new Set(safeIds);
   } catch (error) {
+    debugError(error);
     return new Set();
   }
 }
 
 function saveIdSet(key, idSet) {
-  localStorage.setItem(key, JSON.stringify([...idSet]));
+  const safeIds = Array.from(idSet).filter(Boolean).slice(-MAX_STORED_MESSAGE_IDS);
+  localStorage.setItem(key, JSON.stringify(safeIds));
 }
 
 function saveKnownMessageIds(messages) {
@@ -806,7 +873,7 @@ function handleApiError(error, isSilent = false) {
 function startAutoRefresh() {
   stopAutoRefresh();
 
-  if (!hasMailboxSession()) return;
+  if (!hasMailboxSession() || document.hidden) return;
 
   autoRefreshTimer = window.setInterval(() => {
     refreshInbox({ automatic: true, silent: true });
@@ -817,6 +884,18 @@ function stopAutoRefresh() {
   if (autoRefreshTimer) {
     window.clearInterval(autoRefreshTimer);
     autoRefreshTimer = null;
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopAutoRefresh();
+    return;
+  }
+
+  if (hasMailboxSession()) {
+    startAutoRefresh();
+    refreshInbox({ automatic: true, silent: true });
   }
 }
 
