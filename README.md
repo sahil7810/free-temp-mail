@@ -42,6 +42,7 @@ The current design uses a premium cyber/SaaS visual style:
 - Copy Email button with success message
 - Manual Refresh Inbox button with 10-second cooldown
 - Auto-refresh inbox every 15 seconds after an email is generated
+- Auto-refresh pauses while the browser tab is hidden
 - Reset Email button that clears the current session and stops auto-refresh
 - Inbox count near the Inbox title
 - Inbox list with sender, subject, intro, and human-friendly time
@@ -49,6 +50,9 @@ The current design uses a premium cyber/SaaS visual style:
 - Highlight for new messages when they first appear
 - Click a message to load full message details
 - Safe plain text display for email message content
+- Safe http:// and https:// URL rendering using DOM-created links
+- Message body trimming for very long emails
+- Capped stored message ID history to avoid unlimited localStorage growth
 - Error banner for failed API requests
 - Empty inbox design
 - Light and dark mode
@@ -59,7 +63,8 @@ The current design uses a premium cyber/SaaS visual style:
 - robots.txt
 - manifest.json
 - SVG favicon placeholder
-- SEO title, meta description, Open Graph tags, canonical tag, and JSON-LD structured data
+- SEO title, meta description, Open Graph tags, and canonical tag
+- Cloudflare _headers security policy for stricter browser protection
 - Extra homepage SEO content sections written in simple English
 
 ## How the App Works
@@ -73,10 +78,11 @@ Flow:
 3. Generate a random username like user12345abcxyz.
 4. Create an account with POST /accounts.
 5. Login with POST /token.
-6. Save the temporary email, generated password, token, and account id in localStorage.
+6. Save the temporary email session in browser storage.
 7. Refresh inbox with GET /messages using the Bearer token.
 8. Click a message to fetch full details from GET /messages/{id}.
 9. Display email details safely as plain text.
+10. Convert plain text http:// and https:// URLs into safe links using DOM methods, not innerHTML.
 
 Base API:
 
@@ -84,7 +90,7 @@ Base API:
 https://api.mail.tm
 ```
 
-## localStorage Data
+## Browser Storage Data
 
 The app stores these values in the browser:
 
@@ -97,13 +103,24 @@ The app stores these values in the browser:
 - quicktemp_read_message_ids
 - quicktemp-theme
 
-Clicking Reset Email clears the temporary email session values from localStorage.
+Clicking Reset Email clears the temporary email session values from browser storage.
 
 ## Refresh Rules
 
 - Manual Refresh Inbox has a 10-second cooldown to reduce repeated API calls.
 - Auto-refresh runs every 15 seconds only when a temporary email and token exist.
+- Auto-refresh pauses when the browser tab is hidden.
 - Auto-refresh stops when Reset Email is clicked.
+
+## Security Notes
+
+- Email message HTML is not inserted into the page.
+- Message text is rendered with safe text nodes.
+- Links are created only for http:// and https:// URLs.
+- Links open with noopener/noreferrer/nofollow.
+- No inline onclick handlers are used.
+- Cloudflare _headers adds CSP, frame protection, permissions restrictions, nosniff, and referrer policy.
+- This project is hardened for a static site, but no public website can honestly be called impossible to hack.
 
 ## File Structure
 
@@ -111,9 +128,12 @@ Clicking Reset Email clears the temporary email session values from localStorage
 free-temp-mail/
 ├── index.html
 ├── style.css
+├── security-ui.css
+├── footer.css
 ├── script.js
 ├── privacy.html
 ├── terms.html
+├── _headers
 ├── robots.txt
 ├── sitemap.xml
 ├── manifest.json
@@ -153,9 +173,12 @@ Upload all project files to the GitHub repository:
 
 - index.html
 - style.css
+- security-ui.css
+- footer.css
 - script.js
 - privacy.html
 - terms.html
+- _headers
 - robots.txt
 - sitemap.xml
 - manifest.json
