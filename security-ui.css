@@ -1,0 +1,157 @@
+/* QuickTemp Mail readability and security-focused UI polish */
+:root {
+  --bg: #f5f8fc;
+  --bg-2: #eef5fb;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-solid: #ffffff;
+  --surface-soft: #f3f8fd;
+  --text: #0f172a;
+  --muted: #526175;
+  --border: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(14, 116, 144, 0.28);
+  --primary: #0ea5a4;
+  --primary-hover: #0f766e;
+  --cyan: #0891b2;
+  --violet: #4f46e5;
+  --purple: #6d28d9;
+  --secondary: rgba(15, 23, 42, 0.055);
+  --secondary-hover: rgba(14, 165, 164, 0.11);
+  --danger: #e05252;
+  --danger-hover: #c43b3b;
+  --shadow: 0 18px 46px rgba(15, 23, 42, 0.11);
+  --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --glow: 0 0 24px rgba(14, 165, 164, 0.14);
+}
+
+[data-theme="dark"] {
+  --bg: #07111f;
+  --bg-2: #0b1728;
+  --surface: rgba(13, 25, 43, 0.86);
+  --surface-solid: #0d192b;
+  --surface-soft: #111f35;
+  --text: #edf6ff;
+  --muted: #aab9cb;
+  --border: rgba(148, 163, 184, 0.17);
+  --border-strong: rgba(45, 212, 191, 0.32);
+  --primary: #2dd4bf;
+  --primary-hover: #5eead4;
+  --cyan: #38bdf8;
+  --violet: #818cf8;
+  --purple: #a78bfa;
+  --secondary: rgba(148, 163, 184, 0.10);
+  --secondary-hover: rgba(45, 212, 191, 0.13);
+  --danger: #fb7185;
+  --danger-hover: #f43f5e;
+  --shadow: 0 18px 46px rgba(0, 0, 0, 0.30);
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.22);
+  --glow: 0 0 26px rgba(45, 212, 191, 0.14);
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.logo,
+.footer-logo {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.eyebrow,
+.email-display label,
+.email-row input,
+.auto-refresh-note,
+.status-pill,
+.new-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.hero h1 {
+  letter-spacing: -0.065em;
+}
+
+.site-header {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="dark"] .site-header {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.glow {
+  opacity: 0.22;
+  filter: blur(64px);
+}
+
+.particle-field {
+  opacity: 0.16;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #2563eb);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-hover), #1d4ed8);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #f97316);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--danger-hover), #ea580c);
+}
+
+.email-row input,
+.message-card,
+.message-body,
+.message-link {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.message-body {
+  max-height: min(58vh, 520px);
+  overflow: auto;
+}
+
+.message-link {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary-hover);
+  padding: 0.12rem 0.48rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.message-link:hover,
+.message-link:focus-visible {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  text-decoration: underline;
+  outline: none;
+}
+
+@media (max-width: 420px) {
+  .nav {
+    gap: 0.45rem;
+  }
+
+  .nav-links {
+    gap: 0.18rem;
+    font-size: 0.78rem;
+  }
+
+  .logo {
+    font-size: 0.95rem;
+  }
+}
