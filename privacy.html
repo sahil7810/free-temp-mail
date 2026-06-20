@@ -4,15 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy - QuickTemp Mail</title>
-  <meta name="description" content="Privacy Policy for QuickTemp Mail, a simple temporary email website focused on spam protection and testing." />
+  <meta name="description" content="Privacy Policy for QuickTemp Mail, a free temporary email website using Mail.tm API for disposable email inboxes." />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://example.com/privacy.html" />
+  <link rel="canonical" href="https://quicktemp-mail.pages.dev/privacy.html" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="site-header">
     <nav class="nav container" aria-label="Main navigation">
-      <a class="logo" href="index.html">QuickTemp Mail</a>
+      <a class="logo" href="index.html">
+        <span class="logo-mark" aria-hidden="true">✉️</span>
+        <span>QuickTemp Mail</span>
+      </a>
+      <div class="nav-links" aria-label="Page links">
+        <a href="index.html">Home</a>
+        <a href="terms.html">Terms</a>
+      </div>
       <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode">
         <span aria-hidden="true">🌙</span>
         <span class="theme-toggle-text">Dark Mode</span>
@@ -26,23 +35,23 @@
       <h1>Privacy Policy</h1>
 
       <section class="legal-card">
-        <h2>Overview</h2>
-        <p>QuickTemp Mail is a static website that connects directly to the public Mail.tm API from your browser. It does not use a backend, database, Firebase, paid service, or API key.</p>
-
-        <h2>Information Stored in Your Browser</h2>
-        <p>To keep your temporary inbox available after refresh, this website stores the current temporary email address, generated password, access token, account id, last refresh time, and theme choice in your browser localStorage.</p>
+        <h2>Simple Summary</h2>
+        <p>QuickTemp Mail is a static website that helps create a temporary email inbox using the public Mail.tm API. The site does not ask you to create a personal account and does not ask for personal information.</p>
 
         <h2>Mail.tm API</h2>
-        <p>When you generate an email or refresh your inbox, your browser sends requests to Mail.tm. Messages are retrieved from Mail.tm and displayed as safe plain text where possible.</p>
+        <p>When you generate a temporary email, your browser sends requests to Mail.tm to create the inbox, get an access token, and fetch messages.</p>
+
+        <h2>Browser Storage</h2>
+        <p>To keep your temporary inbox available after refreshing the page, the site stores your generated temporary email, generated password, Mail.tm token, account id, refresh time, and theme choice in your browser localStorage.</p>
 
         <h2>Email Content</h2>
-        <p>Temporary inbox messages are not stored in this website's own database. Do not use temporary email for important accounts, private recovery emails, banking, school, government, or long-term access.</p>
+        <p>Messages are fetched from Mail.tm and shown as safe plain text where possible. This site does not run its own database for saving your emails.</p>
 
-        <h2>Third-Party Services</h2>
-        <p>This website uses Mail.tm for temporary email functionality. It does not load external UI libraries.</p>
+        <h2>Important Accounts</h2>
+        <p>Do not use temporary email for important accounts such as banking, school, government services, password recovery, or long-term access.</p>
 
         <h2>Contact</h2>
-        <p>For questions, update this section with your contact email or support page link before publishing seriously.</p>
+        <p>Before publishing seriously, replace this line with your contact email or support page.</p>
       </section>
     </div>
   </main>
@@ -52,6 +61,7 @@
       <p>&copy; <span id="year"></span> QuickTemp Mail.</p>
       <div class="footer-links" aria-label="Footer links">
         <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy Policy</a>
         <a href="terms.html">Terms</a>
         <span>Powered by Mail.tm API</span>
       </div>
