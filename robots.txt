@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://quicktemp-mail.pages.dev/sitemap.xml
