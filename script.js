@@ -31,6 +31,7 @@ const generateBtn = document.getElementById("generateBtn");
 const copyBtn = document.getElementById("copyBtn");
 const refreshBtn = document.getElementById("refreshBtn");
 const resetBtn = document.getElementById("resetBtn");
+const themeToggleBtn = document.querySelector(".theme-toggle");
 const year = document.getElementById("year");
 
 let isBusy = false;
@@ -47,6 +48,26 @@ function initApp() {
 
   if (emailInput) {
     emailInput.addEventListener("click", copyEmail);
+  }
+
+  if (generateBtn) {
+    generateBtn.addEventListener("click", generateEmail);
+  }
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", copyEmail);
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => refreshInbox());
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", resetEmail);
+  }
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", toggleTheme);
   }
 
   loadSavedTheme();
@@ -282,7 +303,7 @@ async function generateEmail() {
       email: accountData.address,
       password: accountData.password,
       token: tokenData.token,
-      accountId: accountData.account.id
+      accountId: accountData.account?.id || ""
     });
 
     showCurrentEmail(accountData.address);
