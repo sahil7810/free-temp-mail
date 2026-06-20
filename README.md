@@ -7,6 +7,8 @@ The project uses only:
 - HTML
 - CSS
 - JavaScript
+- Browser fetch()
+- Browser localStorage
 
 It does not use React, Next.js, Node.js, Firebase, a database, a backend, paid services, or API keys.
 
@@ -16,27 +18,55 @@ It does not use React, Next.js, Node.js, Firebase, a database, a backend, paid s
 - Header with QuickTemp Mail logo text
 - Hero section for temporary email use
 - Main temporary email box area
-- Buttons for Generate Email, Copy Email, Refresh Inbox, and Reset Email
-- Inbox section
-- Message details section
-- FAQ section
+- Generate Email, Copy Email, Refresh Inbox, and Reset Email buttons
+- Real temporary email generation with Mail.tm API
+- Inbox list with sender, subject, intro, and date
+- Click a message to load full message details
+- Safe plain text display for email message content
 - Privacy Policy page
 - Terms page
 - Light and dark mode with CSS variables
 - Accessible HTML structure
 - SEO meta tags and JSON-LD structured data
 
-## Current JavaScript Status
+## How the App Works
 
-The `script.js` file currently contains placeholder functions only:
+QuickTemp Mail connects directly to the public Mail.tm API from the browser.
 
-- `generateEmail()`
-- `copyEmail()`
-- `refreshInbox()`
-- `resetEmail()`
-- `toggleTheme()`
+Flow:
 
-The current version does not receive real emails yet. Mail.tm API support can be added later without using API keys.
+1. Fetch available domains from GET /domains.
+2. Pick the first active domain from hydra:member.
+3. Generate a random username like user12345abcxyz.
+4. Create an account with POST /accounts.
+5. Login with POST /token.
+6. Save the temporary email, generated password, token, and account id in localStorage.
+7. Refresh inbox with GET /messages using the Bearer token.
+8. Click a message to fetch full details from GET /messages/{id}.
+9. Display email details safely as plain text.
+
+Base API:
+
+```text
+https://api.mail.tm
+```
+
+## localStorage Data
+
+The app stores these values in the browser:
+
+- quicktemp_email
+- quicktemp_password
+- quicktemp_token
+- quicktemp_account_id
+- quicktemp_last_refresh
+- quicktemp-theme
+
+Clicking Reset Email clears the temporary email session values from localStorage.
+
+## Refresh Cooldown
+
+The Refresh Inbox button has a 10-second cooldown to reduce repeated API calls.
 
 ## File Structure
 
@@ -52,9 +82,23 @@ free-temp-mail/
 
 ## How to Run Locally
 
+Simple method:
+
 1. Download or clone this repository.
-2. Open `index.html` in your browser.
-3. No installation is required.
+2. Open index.html in your browser.
+3. Generate an email and use Refresh Inbox to check messages.
+
+Local server method:
+
+```bash
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
 
 ## Deploy on Cloudflare Pages
 
@@ -63,11 +107,14 @@ free-temp-mail/
 3. Connect your GitHub repository.
 4. Select this repository.
 5. Keep build command empty.
-6. Keep output directory as `/` or leave it blank for a simple static site.
+6. Keep output directory as / or leave it blank for a simple static site.
 7. Deploy.
+
+No environment variables are needed because Mail.tm does not require an API key.
 
 ## Important Notes
 
+- This project uses Mail.tm API.
 - This project does not claim full anonymity.
 - This project does not claim to be hack proof.
 - Do not use temporary email for important accounts.
@@ -76,5 +123,3 @@ free-temp-mail/
 ## Powered By
 
 Footer text says: Powered by Mail.tm API
-
-Real API connection is not added yet in this beginner version.
