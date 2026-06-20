@@ -10,7 +10,7 @@ It creates a disposable email inbox using the public Mail.tm API. The project is
 - CSS
 - JavaScript
 - Browser fetch()
-- Browser localStorage
+- Browser localStorage and sessionStorage
 - Mail.tm API
 
 No React, Next.js, Node.js, Firebase, backend, database, npm, build step, paid service, or API key is required.
@@ -75,14 +75,14 @@ Flow:
 
 1. Fetch available domains from GET /domains.
 2. Pick the first active domain from hydra:member.
-3. Generate a random username like user12345abcxyz.
+3. Generate a random username using browser crypto when available.
 4. Create an account with POST /accounts.
 5. Login with POST /token.
-6. Save the temporary email session in browser storage.
+6. Save the temporary email address in localStorage and sensitive session values in sessionStorage.
 7. Refresh inbox with GET /messages using the Bearer token.
 8. Click a message to fetch full details from GET /messages/{id}.
 9. Display email details safely as plain text.
-10. Convert plain text http:// and https:// URLs into safe links using DOM methods, not innerHTML.
+10. Convert plain text http:// and https:// URLs into safe links using DOM methods.
 
 Base API:
 
@@ -92,18 +92,23 @@ https://api.mail.tm
 
 ## Browser Storage Data
 
-The app stores these values in the browser:
+The app uses two browser storage areas:
+
+localStorage stores convenience values:
 
 - quicktemp_email
-- quicktemp_password
-- quicktemp_token
-- quicktemp_account_id
-- quicktemp_last_refresh
 - quicktemp_known_message_ids
 - quicktemp_read_message_ids
 - quicktemp-theme
 
-Clicking Reset Email clears the temporary email session values from browser storage.
+sessionStorage stores sensitive session values:
+
+- quicktemp_password
+- quicktemp_token
+- quicktemp_account_id
+- quicktemp_last_refresh
+
+Clicking Reset Email clears the temporary email session values from browser storage. The sensitive session values are also cleared when the browser session ends.
 
 ## Refresh Rules
 
@@ -118,7 +123,8 @@ Clicking Reset Email clears the temporary email session values from browser stor
 - Message text is rendered with safe text nodes.
 - Links are created only for http:// and https:// URLs.
 - Links open with noopener/noreferrer/nofollow.
-- No inline onclick handlers are used.
+- No inline click handlers are used.
+- Sensitive token and password values are stored in sessionStorage instead of long-term localStorage.
 - Cloudflare _headers adds CSP, frame protection, permissions restrictions, nosniff, and referrer policy.
 - This project is hardened for a static site, but no public website can honestly be called impossible to hack.
 
