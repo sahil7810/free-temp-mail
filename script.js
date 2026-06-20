@@ -1,12 +1,16 @@
+"use strict";
+
 // QuickTemp Mail
-// Beginner-friendly frontend code for the Mail.tm API.
-// This is a static website: no backend, no database, no npm, and no API key.
+// Static frontend for the Mail.tm API: no backend, no database, no npm, and no API key.
 
 const API_BASE = "https://api.mail.tm";
+const API_TIMEOUT_MS = 15000;
 const REFRESH_COOLDOWN_MS = 10000;
 const AUTO_REFRESH_MS = 15000;
 const TOAST_DURATION_MS = 3600;
 const MAX_STORED_MESSAGE_IDS = 120;
+const MAX_INBOX_MESSAGES = 50;
+const MAX_MESSAGE_PREVIEW_CHARS = 320;
 const MAX_MESSAGE_BODY_CHARS = 12000;
 const SAFE_URL_PATTERN = /(https?:\/\/[^\s<>"']+)/gi;
 const DEBUG_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -21,6 +25,13 @@ const STORAGE_KEYS = {
   readMessageIds: "quicktemp_read_message_ids",
   theme: "quicktemp-theme"
 };
+
+const SENSITIVE_KEYS = [
+  STORAGE_KEYS.password,
+  STORAGE_KEYS.token,
+  STORAGE_KEYS.accountId,
+  STORAGE_KEYS.lastRefresh
+];
 
 const emailInput = document.getElementById("emailAddress");
 const statusMessage = document.getElementById("statusMessage");
@@ -46,6 +57,8 @@ let currentMessageRequestId = 0;
 initApp();
 
 function initApp() {
+  clearLegacySensitiveLocalStorage();
+
   if (year) {
     year.textContent = new Date().getFullYear();
   }
@@ -89,10 +102,39 @@ function debugError(error) {
   }
 }
 
-function loadSavedTheme() {
-  const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
+function safeGet(storage, key) {
+  try {
+    return storage.getItem(key) || "";
+  } catch (error) {
+    debugError(error);
+    return "";
+  }
+}
 
-  if (savedTheme) {
+function safeSet(storage, key, value) {
+  try {
+    storage.setItem(key, String(value));
+  } catch (error) {
+    debugError(error);
+  }
+}
+
+function safeRemove(storage, key) {
+  try {
+    storage.removeItem(key);
+  } catch (error) {
+    debugError(error);
+  }
+}
+
+function clearLegacySensitiveLocalStorage() {
+  SENSITIVE_KEYS.forEach((key) => safeRemove(localStorage, key));
+}
+
+function loadSavedTheme() {
+  const savedTheme = safeGet(localStorage, STORAGE_KEYS.theme);
+
+  if (savedTheme === "light" || savedTheme === "dark") {
     document.documentElement.setAttribute("data-theme", savedTheme);
     updateThemeButton(savedTheme);
   }
@@ -118,28 +160,35 @@ function loadSavedMailbox() {
 
 function getSavedSession() {
   return {
-    email: localStorage.getItem(STORAGE_KEYS.email) || "",
-    password: localStorage.getItem(STORAGE_KEYS.password) || "",
-    token: localStorage.getItem(STORAGE_KEYS.token) || "",
-    accountId: localStorage.getItem(STORAGE_KEYS.accountId) || ""
+    email: safeGet(sessionStorage, STORAGE_KEYS.email) || safeGet(localStorage, STORAGE_KEYS.email),
+    password: safeGet(sessionStorage, STORAGE_KEYS.password),
+    token: safeGet(sessionStorage, STORAGE_KEYS.token),
+    accountId: safeGet(sessionStorage, STORAGE_KEYS.accountId)
   };
 }
 
 function saveSession({ email, password, token, accountId }) {
-  localStorage.setItem(STORAGE_KEYS.email, email);
-  localStorage.setItem(STORAGE_KEYS.password, password);
-  localStorage.setItem(STORAGE_KEYS.token, token);
-  localStorage.setItem(STORAGE_KEYS.accountId, accountId || "");
+  safeSet(localStorage, STORAGE_KEYS.email, email);
+  safeSet(sessionStorage, STORAGE_KEYS.email, email);
+  safeSet(sessionStorage, STORAGE_KEYS.password, password);
+  safeSet(sessionStorage, STORAGE_KEYS.token, token);
+  safeSet(sessionStorage, STORAGE_KEYS.accountId, accountId || "");
+  clearLegacySensitiveLocalStorage();
 }
 
 function clearSession() {
-  localStorage.removeItem(STORAGE_KEYS.email);
-  localStorage.removeItem(STORAGE_KEYS.password);
-  localStorage.removeItem(STORAGE_KEYS.token);
-  localStorage.removeItem(STORAGE_KEYS.accountId);
-  localStorage.removeItem(STORAGE_KEYS.lastRefresh);
-  localStorage.removeItem(STORAGE_KEYS.knownMessageIds);
-  localStorage.removeItem(STORAGE_KEYS.readMessageIds);
+  [
+    STORAGE_KEYS.email,
+    STORAGE_KEYS.password,
+    STORAGE_KEYS.token,
+    STORAGE_KEYS.accountId,
+    STORAGE_KEYS.lastRefresh,
+    STORAGE_KEYS.knownMessageIds,
+    STORAGE_KEYS.readMessageIds
+  ].forEach((key) => {
+    safeRemove(localStorage, key);
+    safeRemove(sessionStorage, key);
+  });
 }
 
 function hasMailboxSession() {
@@ -279,21 +328,31 @@ function clearMessageDetails(message) {
   messageDetails.replaceChildren(paragraph);
 }
 
+function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  return fetch(url, {
+    cache: "no-store",
+    ...options,
+    signal: controller.signal,
+    headers: {
+      Accept: "application/json",
+      ...(options.headers || {})
+    }
+  }).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
+}
+
 async function apiRequest(endpoint, options = {}) {
   if (!endpoint.startsWith("/")) {
     throw new Error("Invalid API endpoint.");
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    cache: "no-store",
-    ...options,
-    headers: {
-      Accept: "application/json",
-      ...(options.headers || {})
-    }
-  });
-
+  const response = await fetchWithTimeout(`${API_BASE}${endpoint}`, options);
   let data = null;
+
   try {
     data = await response.json();
   } catch (error) {
@@ -367,11 +426,9 @@ async function createRandomAccount(domain) {
     const address = `${createRandomUsername()}@${domain}`;
     const password = createRandomPassword();
 
-    const response = await fetch(`${API_BASE}/accounts`, {
+    const response = await fetchWithTimeout(`${API_BASE}/accounts`, {
       method: "POST",
-      cache: "no-store",
       headers: {
-        Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ address, password })
@@ -407,14 +464,23 @@ async function loginAccount(address, password) {
 }
 
 function createRandomUsername() {
-  const randomNumber = Math.floor(10000 + Math.random() * 90000);
-  const randomLetters = Math.random().toString(36).replace(/[^a-z]/g, "").slice(0, 6);
-  return `user${randomNumber}${randomLetters}`;
+  return `user${createSecureRandomPart(16).toLowerCase()}`;
 }
 
 function createRandomPassword() {
-  const randomPart = Math.random().toString(36).slice(2);
-  return `QuickTemp-${Date.now()}-${randomPart}`;
+  return `QuickTemp-${Date.now()}-${createSecureRandomPart(24)}`;
+}
+
+function createSecureRandomPart(length) {
+  const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  if (window.crypto?.getRandomValues) {
+    const values = new Uint32Array(length);
+    window.crypto.getRandomValues(values);
+    return Array.from(values, (value) => alphabet[value % alphabet.length]).join("");
+  }
+
+  return Math.random().toString(36).replace(/[^a-z0-9]/gi, "").padEnd(length, "0").slice(0, length);
 }
 
 async function copyEmail() {
@@ -468,7 +534,7 @@ async function refreshInbox(options = {}) {
   }
 
   const now = Date.now();
-  const lastRefresh = Number(localStorage.getItem(STORAGE_KEYS.lastRefresh) || 0);
+  const lastRefresh = Number(safeGet(sessionStorage, STORAGE_KEYS.lastRefresh) || 0);
   const timeSinceLastRefresh = now - lastRefresh;
 
   if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
@@ -481,7 +547,7 @@ async function refreshInbox(options = {}) {
   }
 
   inboxRequestInFlight = true;
-  localStorage.setItem(STORAGE_KEYS.lastRefresh, String(now));
+  safeSet(sessionStorage, STORAGE_KEYS.lastRefresh, String(now));
   updateControls();
 
   if (!isSilent) {
@@ -525,7 +591,7 @@ function getAuthHeaders(token) {
 function renderInboxMessages(messages) {
   if (!inboxList) return 0;
 
-  const safeMessages = Array.isArray(messages) ? messages.slice(0, 50) : [];
+  const safeMessages = Array.isArray(messages) ? messages.slice(0, MAX_INBOX_MESSAGES) : [];
   updateInboxCount(safeMessages.length);
 
   if (!safeMessages.length) {
@@ -588,7 +654,7 @@ function renderInboxMessages(messages) {
 
     const intro = document.createElement("p");
     intro.className = "message-preview";
-    intro.textContent = limitText(message.intro || "No preview available.", 320);
+    intro.textContent = limitText(message.intro || "No preview available.", MAX_MESSAGE_PREVIEW_CHARS);
 
     button.addEventListener("click", () => {
       if (messageId) {
@@ -821,7 +887,7 @@ function formatFullDate(dateValue) {
 
 function getStoredIdSet(key) {
   try {
-    const ids = JSON.parse(localStorage.getItem(key) || "[]");
+    const ids = JSON.parse(safeGet(localStorage, key) || "[]");
     const safeIds = Array.isArray(ids) ? ids.filter(Boolean).slice(-MAX_STORED_MESSAGE_IDS) : [];
     return new Set(safeIds);
   } catch (error) {
@@ -832,7 +898,7 @@ function getStoredIdSet(key) {
 
 function saveIdSet(key, idSet) {
   const safeIds = Array.from(idSet).filter(Boolean).slice(-MAX_STORED_MESSAGE_IDS);
-  localStorage.setItem(key, JSON.stringify(safeIds));
+  safeSet(localStorage, key, JSON.stringify(safeIds));
 }
 
 function saveKnownMessageIds(messages) {
@@ -854,9 +920,15 @@ function markMessageAsRead(messageId) {
 }
 
 function handleApiError(error, isSilent = false) {
+  if (error.name === "AbortError") {
+    if (!isSilent) showError("Request timed out. Please try again.");
+    return;
+  }
+
   if (error.status === 401) {
     stopAutoRefresh();
-    if (!isSilent) showError("Your email session expired. Please reset and generate a new email.");
+    clearSession();
+    if (!isSilent) showError("Your email session expired. Please generate a new email.");
     return;
   }
 
@@ -917,7 +989,7 @@ function toggleTheme() {
   const nextTheme = currentTheme === "dark" ? "light" : "dark";
 
   document.documentElement.setAttribute("data-theme", nextTheme);
-  localStorage.setItem(STORAGE_KEYS.theme, nextTheme);
+  safeSet(localStorage, STORAGE_KEYS.theme, nextTheme);
   updateThemeButton(nextTheme);
 }
 
