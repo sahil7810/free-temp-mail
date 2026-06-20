@@ -2,7 +2,7 @@
 
 QuickTemp Mail is a beginner-friendly static website project for a free temporary email tool.
 
-It creates a disposable email inbox using the public Mail.tm API. The project is made for privacy-friendly testing, spam protection, and reducing exposure of your real inbox.
+It creates a disposable email inbox using the public Mail.tm API. The project is made for privacy-friendly testing, newsletters, trials, spam protection, and reducing exposure of your real inbox.
 
 ## Tech Used
 
@@ -19,11 +19,19 @@ No React, Next.js, Node.js, Firebase, backend, database, npm, build step, paid s
 
 - Clean mobile-first responsive homepage
 - Professional temporary email box
+- Tap the current email box to copy the email
+- Larger Generate Email button on mobile
+- Toast notifications for generated, copied, refreshed, reset, and error states
+- Small loading spinner during API actions
 - Generate Email button
 - Copy Email button with success message
-- Refresh Inbox button with 10-second cooldown
-- Reset Email button
-- Inbox list with sender, subject, intro, and date
+- Manual Refresh Inbox button with 10-second cooldown
+- Auto-refresh inbox every 15 seconds after an email is generated
+- Reset Email button that clears the current session and stops auto-refresh
+- Inbox count near the Inbox title
+- Inbox list with sender, subject, intro, and human-friendly time
+- New/unread badge for messages
+- Highlight for new messages when they first appear
 - Click a message to load full message details
 - Safe plain text display for email message content
 - Error banner for failed API requests
@@ -37,6 +45,7 @@ No React, Next.js, Node.js, Firebase, backend, database, npm, build step, paid s
 - manifest.json
 - SVG favicon placeholder
 - SEO title, meta description, Open Graph tags, canonical tag, and JSON-LD structured data
+- Extra homepage SEO content sections written in simple English
 
 ## How the App Works
 
@@ -69,13 +78,17 @@ The app stores these values in the browser:
 - quicktemp_token
 - quicktemp_account_id
 - quicktemp_last_refresh
+- quicktemp_known_message_ids
+- quicktemp_read_message_ids
 - quicktemp-theme
 
 Clicking Reset Email clears the temporary email session values from localStorage.
 
-## Refresh Cooldown
+## Refresh Rules
 
-The Refresh Inbox button has a 10-second cooldown to reduce repeated API calls.
+- Manual Refresh Inbox has a 10-second cooldown to reduce repeated API calls.
+- Auto-refresh runs every 15 seconds only when a temporary email and token exist.
+- Auto-refresh stops when Reset Email is clicked.
 
 ## File Structure
 
