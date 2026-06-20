@@ -43,7 +43,7 @@
         <p>When you generate a temporary email, your browser sends requests to Mail.tm to create the inbox, get an access token, and fetch messages.</p>
 
         <h2>Browser Storage</h2>
-        <p>To keep your temporary inbox available after refreshing the page, the site stores your generated temporary email, generated password, Mail.tm token, account id, refresh time, and theme choice in your browser localStorage.</p>
+        <p>The site stores your temporary email address, theme choice, and limited message-read history in localStorage. Sensitive session values such as the generated password, Mail.tm token, account id, and refresh time are stored in sessionStorage and are cleared when the browser session ends or when you reset the email.</p>
 
         <h2>Email Content</h2>
         <p>Messages are fetched from Mail.tm and shown as safe plain text where possible. This site does not run its own database for saving your emails.</p>
