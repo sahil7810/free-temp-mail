@@ -2,32 +2,41 @@
 
 QuickTemp Mail is a beginner-friendly static website project for a free temporary email tool.
 
-The project uses only:
+It creates a disposable email inbox using the public Mail.tm API. The project is made for privacy-friendly testing, spam protection, and reducing exposure of your real inbox.
+
+## Tech Used
 
 - HTML
 - CSS
 - JavaScript
 - Browser fetch()
 - Browser localStorage
+- Mail.tm API
 
-It does not use React, Next.js, Node.js, Firebase, a database, a backend, paid services, or API keys.
+No React, Next.js, Node.js, Firebase, backend, database, npm, build step, paid service, or API key is required.
 
 ## Features
 
-- Clean responsive homepage
-- Header with QuickTemp Mail logo text
-- Hero section for temporary email use
-- Main temporary email box area
-- Generate Email, Copy Email, Refresh Inbox, and Reset Email buttons
-- Real temporary email generation with Mail.tm API
+- Clean mobile-first responsive homepage
+- Professional temporary email box
+- Generate Email button
+- Copy Email button with success message
+- Refresh Inbox button with 10-second cooldown
+- Reset Email button
 - Inbox list with sender, subject, intro, and date
 - Click a message to load full message details
 - Safe plain text display for email message content
+- Error banner for failed API requests
+- Empty inbox design
+- Light and dark mode
+- FAQ accordion using simple JavaScript
 - Privacy Policy page
 - Terms page
-- Light and dark mode with CSS variables
-- Accessible HTML structure
-- SEO meta tags and JSON-LD structured data
+- sitemap.xml
+- robots.txt
+- manifest.json
+- SVG favicon placeholder
+- SEO title, meta description, Open Graph tags, canonical tag, and JSON-LD structured data
 
 ## How the App Works
 
@@ -77,6 +86,10 @@ free-temp-mail/
 ├── script.js
 ├── privacy.html
 ├── terms.html
+├── robots.txt
+├── sitemap.xml
+├── manifest.json
+├── favicon.svg
 └── README.md
 ```
 
@@ -100,17 +113,43 @@ Then open:
 http://localhost:8000
 ```
 
-## Deploy on Cloudflare Pages
+## Cloudflare Pages Deployment
 
-1. Push this project to GitHub.
-2. Open Cloudflare Pages.
-3. Connect your GitHub repository.
-4. Select this repository.
-5. Keep build command empty.
-6. Keep output directory as / or leave it blank for a simple static site.
-7. Deploy.
+### Step 1: Create GitHub repo
 
-No environment variables are needed because Mail.tm does not require an API key.
+Create a GitHub repository for this project. If you already have this repository, you can skip this step.
+
+### Step 2: Upload files
+
+Upload all project files to the GitHub repository:
+
+- index.html
+- style.css
+- script.js
+- privacy.html
+- terms.html
+- robots.txt
+- sitemap.xml
+- manifest.json
+- favicon.svg
+- README.md
+
+### Step 3: Connect Cloudflare Pages to GitHub
+
+Open Cloudflare Pages and connect it to your GitHub account. Select this project repository.
+
+### Step 4: Configure build settings
+
+Use these settings:
+
+```text
+Build command: leave empty
+Output directory: /
+```
+
+### Step 5: Deploy
+
+Click Deploy. No environment variables are needed because Mail.tm does not require an API key.
 
 ## Important Notes
 
@@ -118,7 +157,16 @@ No environment variables are needed because Mail.tm does not require an API key.
 - This project does not claim full anonymity.
 - This project does not claim to be hack proof.
 - Do not use temporary email for important accounts.
-- Keep usage focused on privacy, spam protection, and testing.
+- Keep usage focused on privacy, spam protection, disposable email needs, temp mail testing, and free temporary email use.
+
+## Before Publishing Seriously
+
+Replace these placeholder URLs after you know your real Cloudflare Pages domain:
+
+- canonical URLs in HTML files
+- sitemap.xml URLs
+- robots.txt sitemap URL
+- Open Graph URL and image URL
 
 ## Powered By
 
