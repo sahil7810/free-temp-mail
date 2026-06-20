@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickTemp Mail - Free Temporary Email</title>
+  <meta name="description" content="Create a temporary email address to protect your real inbox from spam. Simple, clean, and free temporary email tool for privacy and testing." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://example.com/" />
+
+  <meta property="og:title" content="QuickTemp Mail - Free Temporary Email" />
+  <meta property="og:description" content="Create a temporary email address to protect your real inbox from spam." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://example.com/" />
+  <meta property="og:image" content="https://example.com/og-image.png" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "QuickTemp Mail",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "description": "A simple temporary email tool focused on privacy, spam protection, and testing.",
+    "url": "https://example.com/",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main navigation">
+      <a class="logo" href="index.html" aria-label="QuickTemp Mail homepage">QuickTemp Mail</a>
+      <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <span aria-hidden="true">🌙</span>
+        <span class="theme-toggle-text">Dark Mode</span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section-padding">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <p class="eyebrow">Fast. Simple. Privacy-friendly.</p>
+          <h1>Free Temporary Email</h1>
+          <p class="hero-description">Create a temporary email address to protect your real inbox from spam.</p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="btn btn-primary" href="#mailbox">Get Started</a>
+            <a class="btn btn-secondary" href="#faq">Read FAQ</a>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-label="Temporary email preview">
+          <div class="status-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            Ready to generate
+          </div>
+          <p class="preview-label">Your temporary inbox</p>
+          <p class="preview-email">example@mail.tm</p>
+          <p class="muted-text">Use it for newsletters, trials, and testing where a temporary inbox is enough.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="mailbox" class="section-padding">
+      <div class="container app-layout">
+        <section class="panel temp-box" aria-labelledby="temp-mail-title">
+          <div class="section-heading">
+            <p class="eyebrow">Mailbox</p>
+            <h2 id="temp-mail-title">Main Temp Mail Box</h2>
+            <p>Generate a temporary address and check messages from one simple place.</p>
+          </div>
+
+          <div class="email-display" aria-live="polite">
+            <label for="emailAddress">Temporary email address</label>
+            <div class="email-row">
+              <input id="emailAddress" type="text" value="Click Generate Email" readonly aria-describedby="emailHelp" />
+            </div>
+            <p id="emailHelp" class="help-text">Placeholder only for now. Mail.tm API connection can be added later without using API keys.</p>
+          </div>
+
+          <div class="button-grid" aria-label="Temporary email controls">
+            <button id="generateBtn" class="btn btn-primary" type="button" onclick="generateEmail()">Generate Email</button>
+            <button id="copyBtn" class="btn btn-secondary" type="button" onclick="copyEmail()" disabled>Copy Email</button>
+            <button id="refreshBtn" class="btn btn-secondary" type="button" onclick="refreshInbox()" disabled>Refresh Inbox</button>
+            <button id="resetBtn" class="btn btn-danger" type="button" onclick="resetEmail()" disabled>Reset Email</button>
+          </div>
+
+          <p id="statusMessage" class="status-message" role="status" aria-live="polite">No temporary email generated yet.</p>
+        </section>
+
+        <section class="panel inbox-panel" aria-labelledby="inbox-title">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Inbox</p>
+            <h2 id="inbox-title">Inbox</h2>
+          </div>
+
+          <ul id="inboxList" class="inbox-list" aria-label="Inbox messages">
+            <li class="empty-state">
+              <strong>No messages yet</strong>
+              <span>Generate an email and refresh your inbox to check for messages.</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <section class="section-padding details-section">
+      <div class="container">
+        <section class="panel message-details" aria-labelledby="message-title">
+          <div class="section-heading compact-heading">
+            <p class="eyebrow">Message</p>
+            <h2 id="message-title">Message Details</h2>
+          </div>
+
+          <article id="messageDetails" class="message-card">
+            <p class="muted-text">Select a message from the inbox to view details here.</p>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section id="faq" class="section-padding faq-section">
+      <div class="container">
+        <div class="section-heading center-heading">
+          <p class="eyebrow">Questions</p>
+          <h2>FAQ</h2>
+          <p>Simple answers before you use a temporary inbox.</p>
+        </div>
+
+        <div class="faq-grid">
+          <details class="faq-item">
+            <summary>What is a temporary email?</summary>
+            <p>A temporary email is a short-term inbox you can use when you do not want to share your main email address.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Why should I use QuickTemp Mail?</summary>
+            <p>It can help reduce spam in your real inbox and is useful for simple testing or sign-up experiments.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Is this website fully anonymous?</summary>
+            <p>No. This project does not claim full anonymity. Use it mainly for privacy-friendly temporary email needs and basic testing.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Can I use it for important accounts?</summary>
+            <p>No. Temporary inboxes are not recommended for banking, school, government, recovery emails, or anything important.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Does this version receive real emails?</summary>
+            <p>Not yet. The JavaScript file currently has placeholder functions only. Real inbox support can be added later using the public Mail.tm API.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>&copy; <span id="year"></span> QuickTemp Mail. Built for privacy, spam protection, and testing.</p>
+      <div class="footer-links" aria-label="Footer links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms</a>
+        <span>Powered by Mail.tm API</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
