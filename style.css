@@ -12,6 +12,8 @@
   --secondary-hover: #dce9ff;
   --danger: #dc2626;
   --danger-hover: #b91c1c;
+  --warning-bg: #fff7ed;
+  --warning-text: #9a3412;
   --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
   --radius-lg: 24px;
   --radius-md: 16px;
@@ -33,6 +35,8 @@
   --secondary-hover: #20324f;
   --danger: #f87171;
   --danger-hover: #ef4444;
+  --warning-bg: #331c08;
+  --warning-text: #fed7aa;
   --shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
 }
 
@@ -251,7 +255,11 @@ a:hover {
 
 .muted-text,
 .help-text,
-.status-message {
+.status-message,
+.message-meta,
+.message-preview,
+.message-date,
+.message-note {
   color: var(--muted);
 }
 
@@ -303,13 +311,24 @@ a:hover {
   color: var(--text);
   border-radius: var(--radius-md);
   padding: 1rem;
-  font-weight: 800;
+  font-weight: 900;
   overflow-wrap: anywhere;
 }
 
 .help-text {
   margin: 0.65rem 0 0;
   font-size: 0.95rem;
+}
+
+.notice-text {
+  display: inline-flex;
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .button-grid {
@@ -343,12 +362,79 @@ a:hover {
   margin-top: 0.25rem;
 }
 
+.inbox-message {
+  border-style: solid;
+  padding: 0;
+  overflow: hidden;
+}
+
+.message-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  padding: 1rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.message-button:hover,
+.message-button:focus-visible {
+  background: var(--secondary);
+  outline: none;
+}
+
+.message-subject {
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.message-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.message-preview {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 .message-card {
   min-height: 140px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem;
   background: var(--surface-soft);
+  overflow-wrap: anywhere;
+}
+
+.message-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.message-info {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+}
+
+.message-body {
+  white-space: pre-wrap;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.message-note {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
 }
 
 .faq-section {
