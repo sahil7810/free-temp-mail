@@ -1,0 +1,16 @@
+{
+  "name": "QuickTemp Mail",
+  "short_name": "QuickTemp",
+  "description": "Free temporary email and disposable temp mail inbox powered by Mail.tm API.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
